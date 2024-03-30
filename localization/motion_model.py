@@ -1,16 +1,13 @@
-
+import numpy as np
 
 class MotionModel:
 
     def __init__(self, node):
-        ####################################
-        # TODO
-        # Do any precomputation for the motion
-        # model here.
-
-        pass
-
-        ####################################
+        self.rng = np.random.default_rng()
+        x_max_deviation = 0.25
+        y_max_deviation = 0.125
+        th_max_deviation = np.pi/6
+        self.deviation = np.array([x_max_deviation, y_max_deviation, th_max_deviation])
 
     def evaluate(self, particles, odometry):
         """
@@ -28,12 +25,58 @@ class MotionModel:
 
         returns:
             particles: An updated matrix of the
-                same size
+                same size as an nparray
         """
+        particles_T = [self.to_T(particle) for particle in particles]
+        odom_T = self.to_T(odometry)
+        new_particles = []
+        for particle in particles_T:
+            noise = self.normalize(self.rng.standard_normal(3))
+            new_particles.append(self.from_T(particle@odom_T) + noise)
+        return np.array(new_particles)
 
-        ####################################
-        # TODO
+    def to_T(self, pose):
+        '''
+        args:
+            pose: [x, y, th]
+        returns:
+            T: Transform rep of the pose
+        '''
+        x, y, th = pose[0], pose[1], pose[2]
+        return np.array([
+            [np.cos(th), -np.sin(th), x],
+            [np.sin(th),  np.cos(th), y],
+            [         0,           0, 1],
+        ])
+    
+    def from_T(self, T):
+        '''
+        args:
+            T: Transform rep of the pose as 3x3 np array
+            noise: [x, y, th]
+        returns:
+            pose: [x, y, th]
+        '''
+        return np.array([
+            T[0, 2],
+            T[1, 2],
+            np.arccos(T[0,0]),
+        ])
 
-        raise NotImplementedError
+    def normalize(self, pose):
+        '''
+        max is assumed to be 4 std dev away from mean of 0
+        args:
+            pose: [x, y, th] as np array
+        returns:
+            clipped pose normalized between max values defined above
+        '''
+        return pose * self.deviation / 4
+    
 
-        ####################################
+if __name__ == '__main__':
+    mm = MotionModel(None)
+    particles = [[1,2,0],[1,1,0]]
+    odom = [1,0,0]
+    particles_tplus1 = mm.evaluate(particles, odom)
+    print(particles_tplus1)
