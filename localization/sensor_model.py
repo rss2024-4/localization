@@ -37,7 +37,7 @@ class SensorModel:
         self.alpha_rand = 0.12
         self.sigma_hit = 8.0
 
-        self.z_max = 10
+        self.z_max = 6
         # TODO eta might be a function of d in which case
         # it's not a constant
         self.eta = 1
@@ -122,22 +122,17 @@ class SensorModel:
                the probability of each particle existing
                given the observation and the map.
         """
-
         if not self.map_set:
             return
-
-        ####################################
-        # TODO
-        # Evaluate the sensor model here!
-        #
-        # You will probably want to use this function
-        # to perform ray tracing from all the particles.
-        # This produces a matrix of size N x num_beams_per_particle 
-
-        scans = self.scan_sim.scan(particles)
-
-        ####################################
-
+        positions = self.scan_sim.scan(particles)
+        observation = np.clip(scan, 0, self.z_max)
+        probs = []
+        for scan in positions:
+            scan = np.clip(scan, 0, self.z_max) 
+            prob = np.prod(self.sensor_model_table[z, d] for z, d in zip(observation, scan))
+            probs.append(prob)
+        return np.array(probs)
+        
     def map_callback(self, map_msg):
         # Convert the map to a numpy array
         self.map = np.array(map_msg.data, np.double) / 100.
