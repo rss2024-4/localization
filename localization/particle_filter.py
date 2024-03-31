@@ -3,6 +3,7 @@ from localization.motion_model import MotionModel
 
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovarianceStamped
+from sensor_msgs.msg import LaserScan
 
 from rclpy.node import Node
 import rclpy
@@ -81,7 +82,7 @@ class ParticleFilter(Node):
         # your particles, ideally with some sort
         # of interactive interface in rviz
         #
-        # Publish a transformation frame between the map
+        # TODO: Publish a transformation frame between the map
         # and the particle_filter_frame.
                 
         self.particles = None
@@ -93,19 +94,31 @@ class ParticleFilter(Node):
         
     
     def laser_callback(self, scan):
+        """
+        Update particle probabilities and resamples based on odometry data
+        
+        args
+            odom: sensor_msgs/LaserScan message
+        """
         if self.particles is None:
             return
         
+        # downsample lidar to correct number of beams, evenly spaced 
         observation = scan.ranges
         mask = np.round(np.linspace(0, len(observation)-1, self.num_beams_per_particle))
         observation_downsampled = observation[mask]
         
+        # recalculate probabilities using sensor model
         self.particle_probabilities = self.sensor_model.evaluate(self.particles, observation_downsampled)
         
+        # resample particles based on new probabilities
         res = np.random.choice(self.N_PARTICLES, self.N_PARTICLES, True, self.particle_probabilities)
         self.particles = self.particles[res]
         self.particle_probabilities = self.particle_probabilities[res]
-        # self.particle_probabilities /= np.sum(self.particle_probabilities) # Is normalization needed?
+        self.particle_probabilities /= np.sum(self.particle_probabilities) # TODO: Is normalization needed?
+        
+        
+        self.publish_average_pose()
         
         
     
@@ -135,6 +148,12 @@ class ParticleFilter(Node):
         self.last_time = time
         
     def pose_callback(self, init_pose):
+        """
+        Initializes particles based on pose guess
+        
+        args
+            init_pose: geometry_msgs/PoseWithCovarianceStamped message
+        """
         x = init_pose.pose.pose.position.x
         y = init_pose.pose.pose.position.y
         o = init_pose.pose.pose.orientation
@@ -149,6 +168,9 @@ class ParticleFilter(Node):
         
         
     def publish_average_pose(self):
+        """
+        Publish particle filter 'average' guess as nav_msgs/Odometry message
+        """
         avg_pose = self.particles[np.argmax(self.particle_probabilities)]
         #TODO: do weighted average with outlier detection
         
@@ -164,6 +186,8 @@ class ParticleFilter(Node):
         msg.pose.pose.orientation.y = quaternion.y
         msg.pose.pose.orientation.z = quaternion.z
         msg.pose.pose.orientation.w = quaternion.w
+        
+        self.odom_pub.publish(msg)
         
         
         
