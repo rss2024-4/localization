@@ -27,12 +27,12 @@ class MotionModel:
             particles: An updated matrix of the
                 same size as an nparray
         """
-        particles_T = [self.to_T(particle) for particle in particles]
+        particles_T = list(map(self.to_T, particles))
         odom_T = self.to_T(odometry)
         new_particles = []
         for particle in particles_T:
             noise = self.normalize(self.rng.standard_normal(3))
-            new_particles.append(self.from_T(particle@odom_T) + noise)
+            new_particles.append(self.from_T(particle@odom_T, noise))
         return np.array(new_particles)
 
     def to_T(self, pose):
@@ -49,7 +49,7 @@ class MotionModel:
             [         0,           0, 1],
         ])
     
-    def from_T(self, T):
+    def from_T(self, T, noise):
         '''
         args:
             T: Transform rep of the pose as 3x3 np array
@@ -61,7 +61,7 @@ class MotionModel:
             T[0, 2],
             T[1, 2],
             np.arccos(T[0,0]),
-        ])
+        ]) + noise
 
     def normalize(self, pose):
         '''
@@ -72,6 +72,13 @@ class MotionModel:
             clipped pose normalized between max values defined above
         '''
         return pose * self.deviation / 4
+    
+    def gen_noise(self, N):
+        '''
+        returns:
+            clipped normal pose noise (N x 3)
+        '''
+        return self.normalize(self.rng.standard_normal((N, 3)))
     
 
 if __name__ == '__main__':

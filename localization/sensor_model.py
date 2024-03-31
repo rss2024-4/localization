@@ -125,7 +125,7 @@ class SensorModel:
         if not self.map_set:
             return
         positions = self.scan_sim.scan(particles)
-        observation = np.clip(scan, 0, self.z_max)
+        observation = np.clip(observation, 0, self.z_max)
         probs = []
         for scan in positions:
             scan = np.clip(scan, 0, self.z_max) 
