@@ -101,21 +101,22 @@ class ParticleFilter(Node):
             odom: sensor_msgs/LaserScan message
         """
         if self.particles is None:
+            self.get_logger().info("no particles from sensor")
             return
-        
+        self.get_logger().info("sensor running")
         # downsample lidar to correct number of beams, evenly spaced 
-        observation = scan.ranges
-        mask = np.round(np.linspace(0, len(observation)-1, self.num_beams_per_particle))
+        observation = np.array(scan.ranges)
+        mask = (np.linspace(0, len(observation)-1, self.num_beams_per_particle)).astype(int)
         observation_downsampled = observation[mask]
         
         # recalculate probabilities using sensor model
         self.particle_probabilities = self.sensor_model.evaluate(self.particles, observation_downsampled)
         
         # resample particles based on new probabilities
-        res = np.random.choice(self.N_PARTICLES, self.N_PARTICLES, True, self.particle_probabilities)
+        res = np.random.choice(self.N_PARTICLES, self.N_PARTICLES, True, self.normalize(self.particle_probabilities))
         self.particles = self.particles[res]
         self.particle_probabilities = self.particle_probabilities[res]
-        self.particle_probabilities /= np.sum(self.particle_probabilities) # TODO: Is normalization needed?
+        self.particle_probabilities /= np.sum(self.particle_probabilities) # Is normalization needed? No individual particles have individual probabilities of existing
         
         
         self.publish_average_pose()
@@ -130,15 +131,17 @@ class ParticleFilter(Node):
             odom: nav_msgs/Odometry message
         """
         if self.particles is None:
+            self.get_logger().info("no particles from odom")
             return
         
+        self.get_logger().info("motion running")
         time = odom.header.stamp.sec + odom.header.stamp.nanosec * 1e-9
         
         if self.last_time is None:
             self.last_time = time # only if previous odometry data exists
             return
             
-        dt = time = self.last_time
+        dt = time - self.last_time
         dx = odom.twist.twist.linear.x * dt
         dy = odom.twist.twist.linear.y * dt
         dtheta = odom.twist.twist.angular.z * dt # theta is rotation around z
@@ -154,10 +157,11 @@ class ParticleFilter(Node):
         args
             init_pose: geometry_msgs/PoseWithCovarianceStamped message
         """
+        self.get_logger().info("Initialized")
         x = init_pose.pose.pose.position.x
         y = init_pose.pose.pose.position.y
         o = init_pose.pose.pose.orientation
-        theta = euler_from_quaternion(o.x, o.y, o.z, o.w)[2]
+        theta = euler_from_quaternion([o.x, o.y, o.z, o.w])[2]
         
         pose_guess = np.array([[x, y, theta]])
         self.particles = np.repeat(pose_guess, self.N_PARTICLES, axis=0)
@@ -182,14 +186,15 @@ class ParticleFilter(Node):
         
         quaternion = quaternion_from_euler(0, 0, avg_pose[2])
         
-        msg.pose.pose.orientation.x = quaternion.x
-        msg.pose.pose.orientation.y = quaternion.y
-        msg.pose.pose.orientation.z = quaternion.z
-        msg.pose.pose.orientation.w = quaternion.w
+        msg.pose.pose.orientation.x = quaternion[0]
+        msg.pose.pose.orientation.y = quaternion[1]
+        msg.pose.pose.orientation.z = quaternion[2]
+        msg.pose.pose.orientation.w = quaternion[3]
         
         self.odom_pub.publish(msg)
         
-        
+    def normalize(self, arr):
+        return arr / np.sum(arr)
         
 
 

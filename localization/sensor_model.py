@@ -16,7 +16,7 @@ class SensorModel:
 
     def __init__(self, node):
         node.declare_parameter('map_topic', "default")
-        node.declare_parameter('num_beams_per_particle', "default")
+        # node.declare_parameter('num_beams_per_particle', "default")
         node.declare_parameter('scan_theta_discretization', "default")
         node.declare_parameter('scan_field_of_view', "default")
         node.declare_parameter('lidar_scale_to_map_scale', 1)
@@ -46,10 +46,10 @@ class SensorModel:
         self.table_width = 201
         ####################################
 
-        node.get_logger().info("%s" % self.map_topic)
-        node.get_logger().info("%s" % self.num_beams_per_particle)
-        node.get_logger().info("%s" % self.scan_theta_discretization)
-        node.get_logger().info("%s" % self.scan_field_of_view)
+        node.get_logger().info("map topic: %s" % self.map_topic)
+        node.get_logger().info("beams per particle: %s" % self.num_beams_per_particle)
+        node.get_logger().info("th discretization: %s" % self.scan_theta_discretization)
+        node.get_logger().info("fov: %s" % self.scan_field_of_view)
 
         # Precompute the sensor model table
         self.sensor_model_table = np.empty((self.table_width, self.table_width))
@@ -126,10 +126,11 @@ class SensorModel:
             return
         positions = self.scan_sim.scan(particles)
         observation = np.clip(observation, 0, self.z_max)
+        observation = np.round(observation).astype(int)
         probs = []
         for scan in positions:
-            scan = np.clip(scan, 0, self.z_max) 
-            prob = np.prod(self.sensor_model_table[z, d] for z, d in zip(observation, scan))
+            scan = np.round(np.clip(scan, 0, self.z_max)).astype(int)
+            prob = np.prod([self.sensor_model_table[z, d] for z, d in zip(observation, scan)])
             probs.append(prob)
         return np.array(probs)
         
