@@ -4,6 +4,7 @@ from localization.motion_model import MotionModel
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from sensor_msgs.msg import LaserScan
+from ackermann_msgs.msg import AckermannDrive
 
 from rclpy.node import Node
 import rclpy
@@ -91,6 +92,15 @@ class ParticleFilter(Node):
         #self.particle_probabities = np.empty(self.N_PARTICLES)
         
         self.last_time = None
+
+        # test in sim
+        self.drive_pub = self.create_publisher(AckermannDrive, "/drive", 10)
+        def timer_cb():
+            signal = AckermannDrive()
+            signal.speed = 1.0
+            signal.steering_angle = 0.1
+            self.drive_pub.publish(signal)
+        self.timer = self.create_timer(1., timer_cb)
         
     
     def laser_callback(self, scan):
@@ -196,6 +206,7 @@ class ParticleFilter(Node):
     def normalize(self, arr):
         return arr / np.sum(arr)
         
+    # def drive(self):
 
 
 def main(args=None):
