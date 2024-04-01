@@ -125,11 +125,11 @@ class SensorModel:
         if not self.map_set:
             return
         positions = self.scan_sim.scan(particles)
-        observation = np.clip(observation, 0, self.z_max)
+        observation = np.clip(observation / (self.resolution*self.lidar_scale_to_map_scale), 0, self.z_max)
         observation = np.round(observation).astype(int)
         probs = []
         for scan in positions:
-            scan = np.round(np.clip(scan, 0, self.z_max)).astype(int)
+            scan = np.round(np.clip(scan / (self.resolution*self.lidar_scale_to_map_scale), 0, self.z_max)).astype(int)
             prob = np.prod([self.sensor_model_table[z, d] for z, d in zip(observation, scan)])
             probs.append(prob)
         return np.array(probs)
