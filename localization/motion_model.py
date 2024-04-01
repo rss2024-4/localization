@@ -6,7 +6,7 @@ class MotionModel:
         self.rng = np.random.default_rng()
         x_max_deviation = 0.1
         y_max_deviation = 0.1
-        th_max_deviation = np.pi/6
+        th_max_deviation = np.pi/30
         self.deviation = np.array([x_max_deviation, y_max_deviation, th_max_deviation])
 
     def evaluate(self, particles, odometry):
