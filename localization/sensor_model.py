@@ -99,7 +99,7 @@ class SensorModel:
         for col in self.sensor_model_table.T:
             col = col / np.sum(col)
         # normalize whole table
-        self.sensor_model_table / np.sum(self.sensor_model_table)
+        self.sensor_model_table /= np.sum(self.sensor_model_table)
 
 
     def evaluate(self, particles, observation):

@@ -4,8 +4,8 @@ class MotionModel:
 
     def __init__(self, node):
         self.rng = np.random.default_rng()
-        x_max_deviation = 0.25
-        y_max_deviation = 0.125
+        x_max_deviation = 0.1
+        y_max_deviation = 0.1
         th_max_deviation = np.pi/6
         self.deviation = np.array([x_max_deviation, y_max_deviation, th_max_deviation])
 
