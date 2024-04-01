@@ -165,7 +165,7 @@ class ParticleFilter(Node):
         
         pose_guess = np.array([[x, y, theta]])
         self.particles = np.repeat(pose_guess, self.N_PARTICLES, axis=0)
-        self.particles += self.motion_model.gen_noise(self.N_PARTICLES)
+        # self.particles += self.motion_model.gen_noise(self.N_PARTICLES) we already add noise in the motion model
         #TODO: change noise model to use covariances from pose message?
         
         self.particle_probabilities = np.ones(self.N_PARTICLES) / self.N_PARTICLES
