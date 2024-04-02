@@ -24,7 +24,7 @@ class ParticleFilter(Node):
         super().__init__("particle_filter")
 
         self.declare_parameter('particle_filter_frame', "default")
-        self.declare_parameter('num_beams_per_particle', "default")
+        # self.declare_parameter('num_beams_per_particle', "default")
         
         self.particle_filter_frame = self.get_parameter('particle_filter_frame').get_parameter_value().string_value
         self.num_beams_per_particle = self.get_parameter('num_beams_per_particle').get_parameter_value().integer_value

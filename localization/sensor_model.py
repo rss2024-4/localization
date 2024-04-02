@@ -16,7 +16,7 @@ class SensorModel:
 
     def __init__(self, node):
         node.declare_parameter('map_topic', "default")
-        # node.declare_parameter('num_beams_per_particle', "default")
+        node.declare_parameter('num_beams_per_particle', "default")
         node.declare_parameter('scan_theta_discretization', "default")
         node.declare_parameter('scan_field_of_view', "default")
         node.declare_parameter('lidar_scale_to_map_scale', 1)
@@ -37,7 +37,7 @@ class SensorModel:
         self.alpha_rand = 0.12
         self.sigma_hit = 8.0
 
-        self.z_max = 6
+        self.z_max = 100
         # TODO eta might be a function of d in which case
         # it's not a constant
         self.eta = 1
@@ -97,7 +97,7 @@ class SensorModel:
                 self.sensor_model_table[z, d] = self.probability(z, d, self.eta, self.z_max)
         # normalize columns
         for col in self.sensor_model_table.T:
-            col = col / np.sum(col)
+            col /= np.sum(col)
         # normalize whole table
         self.sensor_model_table /= np.sum(self.sensor_model_table)
 
