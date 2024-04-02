@@ -60,7 +60,7 @@ class MotionModel:
         return np.array([
             T[0, 2],
             T[1, 2],
-            np.arccos(T[0,0]),
+            np.arctan2(T[1, 0], T[0, 0]),
         ])
 
     def normalize(self, pose):
