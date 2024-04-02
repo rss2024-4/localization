@@ -14,6 +14,7 @@ from tf_transformations import euler_from_quaternion, quaternion_from_euler
 assert rclpy
 
 import numpy as np
+import threading
 
 
 class ParticleFilter(Node):
@@ -101,6 +102,8 @@ class ParticleFilter(Node):
             # signal.drive.steering_angle = 0.1
             self.drive_pub.publish(signal)
         self.timer = self.create_timer(1., timer_cb)
+
+        self.lock = False
         
     
     def laser_callback(self, scan):
@@ -110,26 +113,31 @@ class ParticleFilter(Node):
         args
             odom: sensor_msgs/LaserScan message
         """
-        if self.particles is None:
-            self.get_logger().info("no particles from sensor")
-            return
-        self.get_logger().info("sensor running")
-        # downsample lidar to correct number of beams, evenly spaced 
-        observation = np.array(scan.ranges)
-        mask = (np.linspace(0, len(observation)-1, self.num_beams_per_particle)).astype(int)
-        observation_downsampled = observation[mask]
-        
-        # recalculate probabilities using sensor model
-        self.particle_probabilities = self.sensor_model.evaluate(self.particles, observation_downsampled)
-        
-        # resample particles based on new probabilities
-        res = np.random.choice(self.N_PARTICLES, self.N_PARTICLES, True, self.normalize(self.particle_probabilities))
-        self.particles = self.particles[res]
-        self.particle_probabilities = self.particle_probabilities[res]
-        self.particle_probabilities /= np.sum(self.particle_probabilities) # Is normalization needed? No individual particles have individual probabilities of existing
-        
-        
-        self.publish_average_pose()
+        if self.lock == False:
+
+
+            if self.particles is None:
+                self.get_logger().info("no particles from sensor")
+                return
+            self.get_logger().info("sensor running")
+            # downsample lidar to correct number of beams, evenly spaced 
+            observation = np.array(scan.ranges)
+            mask = (np.linspace(0, len(observation)-1, self.num_beams_per_particle)).astype(int)
+            observation_downsampled = observation[mask]
+            
+            # recalculate probabilities using sensor model
+            self.particle_probabilities = self.sensor_model.evaluate(self.particles, observation_downsampled)
+            
+            # resample particles based on new probabilities
+            res = np.random.choice(self.N_PARTICLES, self.N_PARTICLES, True, self.normalize(self.particle_probabilities))
+            self.particles = self.particles[res]
+            self.particle_probabilities = self.particle_probabilities[res]
+            self.particle_probabilities /= np.sum(self.particle_probabilities) # Is normalization needed? No individual particles have individual probabilities of existing
+            
+            self.publish_average_pose()
+
+            
+            self.lock = True
         
         
     
@@ -140,25 +148,32 @@ class ParticleFilter(Node):
         args
             odom: nav_msgs/Odometry message
         """
-        if self.particles is None:
-            self.get_logger().info("no particles from odom")
-            return
-        
-        self.get_logger().info("motion running")
-        time = odom.header.stamp.sec + odom.header.stamp.nanosec * 1e-9
-        
-        if self.last_time is None:
-            self.last_time = time # only if previous odometry data exists
-            return
+        if self.lock == True:
+
+
+            if self.particles is None:
+                self.get_logger().info("no particles from odom")
+                return
             
-        dt = time - self.last_time
-        dx = odom.twist.twist.linear.x * dt
-        dy = odom.twist.twist.linear.y * dt
-        dtheta = odom.twist.twist.angular.z * dt # theta is rotation around z
-        self.particles = self.motion_model.evaluate(self.particles, [dx, dy, dtheta])
-        
-        self.publish_average_pose()
-        self.last_time = time
+            self.get_logger().info("motion running")
+            time = odom.header.stamp.sec + odom.header.stamp.nanosec * 1e-9
+            
+            if self.last_time is None:
+                self.last_time = time # only if previous odometry data exists
+                return
+                
+            dt = time - self.last_time
+            dx = odom.twist.twist.linear.x * dt
+            dy = odom.twist.twist.linear.y * dt
+            dtheta = odom.twist.twist.angular.z * dt # theta is rotation around z
+            self.particles = self.motion_model.evaluate(self.particles, [dx, dy, dtheta])
+            
+            self.publish_average_pose()
+            self.last_time = time
+
+
+            self.lock = False
+
         
     def pose_callback(self, init_pose):
         """

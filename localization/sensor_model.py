@@ -37,9 +37,7 @@ class SensorModel:
         self.alpha_rand = 0.12
         self.sigma_hit = 8.0
 
-        self.z_max = 201
-        # TODO eta might be a function of d in which case
-        # it's not a constant
+        self.z_max = 200
         self.eta = 1
 
         # Your sensor table will be a `table_width` x `table_width` np array:
@@ -98,8 +96,11 @@ class SensorModel:
         # normalize columns
         for col in self.sensor_model_table.T:
             col /= np.sum(col)
-        # normalize whole table
-        # self.sensor_model_table /= np.sum(self.sensor_model_table)
+
+        # with open('src/localization/localization/result.yml', 'r') as f:
+        #     arr = yaml.load(f, Loader=yaml.SafeLoader)
+        # self.sensor_model_table = np.array(arr)
+        
 
 
     def evaluate(self, particles, observation):
@@ -166,7 +167,8 @@ class SensorModel:
         print("Map initialized")
 
     def probability(self, z, d, eta, z_max):
-        p_hit = eta * (1/np.sqrt(2*np.pi*(self.sigma_hit**2))) * np.exp(-((z-d)**2) / (2 * (self.sigma_hit**2))) if 0<=z<=z_max else 0
+        s_2 = self.sigma_hit**2
+        p_hit = eta * (1/np.sqrt(2*np.pi*s_2)) * np.exp(-((z-d)**2) / (2*s_2)) if 0<=z<=z_max else 0
         p_short = (2/d) * (1 - (z/d)) if 0<=z<=d and d!=0 else 0
         p_max = 1 if z==z_max else 0
         p_rand = 1/z_max if 0<=z<=z_max else 0
