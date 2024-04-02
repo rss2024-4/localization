@@ -14,7 +14,6 @@ from tf_transformations import euler_from_quaternion, quaternion_from_euler
 assert rclpy
 
 import numpy as np
-import threading
 
 
 class ParticleFilter(Node):

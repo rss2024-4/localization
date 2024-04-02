@@ -37,8 +37,8 @@ class SensorModel:
         self.alpha_rand = 0.12
         self.sigma_hit = 8.0
 
-        self.z_max = 200
-        self.eta = 1
+        self.z_max = 200.0
+        self.eta = 1.0
 
         # Your sensor table will be a `table_width` x `table_width` np array:
         self.table_width = 201
