@@ -8,7 +8,6 @@ from localization.test import TEST_PRECOMPUTED_TABLE, TEST_SENSOR_MODEL_OUTPUT_P
     TEST_SENSOR_MODEL_INPUT_SCANS, \
     TEST_PARTICLES_2, TEST_MAP_ARRAY
 
-
 class Args:
     alpha_hit = 0.74
     alpha_short = 0.07

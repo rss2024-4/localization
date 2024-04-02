@@ -37,7 +37,7 @@ class SensorModel:
         self.alpha_rand = 0.12
         self.sigma_hit = 8.0
 
-        self.z_max = 100
+        self.z_max = 201
         # TODO eta might be a function of d in which case
         # it's not a constant
         self.eta = 1
@@ -99,7 +99,7 @@ class SensorModel:
         for col in self.sensor_model_table.T:
             col /= np.sum(col)
         # normalize whole table
-        self.sensor_model_table /= np.sum(self.sensor_model_table)
+        # self.sensor_model_table /= np.sum(self.sensor_model_table)
 
 
     def evaluate(self, particles, observation):
