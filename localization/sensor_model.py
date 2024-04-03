@@ -90,17 +90,18 @@ class SensorModel:
             No return type. Directly modify `self.sensor_model_table`.
         """
         # compute table
+        p_hit_table = np.zeros((self.table_width, self.table_width))
+        self.sensor_model_table = np.zeros((self.table_width, self.table_width))
         for z in range(self.table_width):
             for d in range(self.table_width):
-                self.sensor_model_table[z, d] = self.probability(z, d, self.eta, self.z_max)
-        # normalize columns
-        for col in self.sensor_model_table.T:
-            col /= np.sum(col)
+                self.sensor_model_table[z][d] = self.probability_without_hit(z, d, self.eta, self.z_max)
+                p_hit_table[z][d] = self.p_hit(z, d, self.z_max)
 
-        # with open('src/localization/localization/result.yml', 'r') as f:
-        #     arr = yaml.load(f, Loader=yaml.SafeLoader)
-        # self.sensor_model_table = np.array(arr)
-        
+        # normalize columns
+        normalized_p_hits = p_hit_table/p_hit_table.sum(axis=0, keepdims=True)
+        self.sensor_model_table = self.sensor_model_table + self.alpha_hit*normalized_p_hits
+
+        self.sensor_model_table = self.sensor_model_table/self.sensor_model_table.sum(axis=0, keepdims=True)
 
 
     def evaluate(self, particles, observation):
@@ -164,12 +165,14 @@ class SensorModel:
         # Make the map set
         self.map_set = True
 
-        print("Map initialized")
+        # print("Map initialized")
 
-    def probability(self, z, d, eta, z_max):
-        s_2 = self.sigma_hit**2
-        p_hit = eta * (1/np.sqrt(2*np.pi*s_2)) * np.exp(-((z-d)**2) / (2*s_2)) if 0<=z<=z_max else 0
+    def probability_without_hit(self, z, d, eta, z_max):
         p_short = (2/d) * (1 - (z/d)) if 0<=z<=d and d!=0 else 0
         p_max = 1 if z==z_max else 0
         p_rand = 1/z_max if 0<=z<=z_max else 0
-        return self.alpha_hit*p_hit + self.alpha_short*p_short + self.alpha_max*p_max + self.alpha_rand*p_rand
+        return self.alpha_short*p_short + self.alpha_max*p_max + self.alpha_rand*p_rand
+
+    def p_hit(self, z, d, z_max):
+        p_hit = (1./np.sqrt(2.*np.pi*self.sigma_hit**2)) * np.exp(-((z-d)**2) / (2*self.sigma_hit**2)) if 0<=z<=z_max else 0
+        return p_hit
