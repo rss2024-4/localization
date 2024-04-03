@@ -8,6 +8,7 @@ class MotionModel:
         y_max_deviation = 0.1
         th_max_deviation = np.pi/30
         self.deviation = np.array([x_max_deviation, y_max_deviation, th_max_deviation])
+        self.node = node
 
     def evaluate(self, particles, odometry):
         """
@@ -31,7 +32,27 @@ class MotionModel:
         odom_T = self.to_T(odometry)
         new_particles = []
         for particle in particles_T:
-            noise = self.normalize(self.rng.standard_normal(3))
+            ## NO NOISE
+            # noise = np.zeros(3)
+
+            ## GAUSSIAN (0, 0.02)
+            noise = np.random.normal(0,0.02,3)
+
+            ## GAUSSIAN (0, 0.02)
+            # noise = np.random.normal(0,0.04,3)
+
+            ## GAUSSIAN (0, 0.02)
+            # noise = np.random.normal(0,0.06,3)
+
+            ## UNIFORM (-0.02, 0.02)
+            # noise = np.random.uniform(-0.02, 0.02, 3)
+
+            ## UNIFORM (-0.02, 0.02)
+            # noise = np.random.uniform(-0.04, 0.04, 3)
+
+            ## UNIFORM (-0.02, 0.02)
+            # noise = np.random.uniform(-0.06, 0.06, 3)
+            
             new_particles.append(self.from_T(particle@odom_T) + noise)
         return np.array(new_particles)
 

@@ -9,6 +9,7 @@ from ackermann_msgs.msg import AckermannDriveStamped
 from rclpy.node import Node
 import rclpy
 
+
 from tf_transformations import euler_from_quaternion, quaternion_from_euler
 
 assert rclpy
@@ -129,7 +130,7 @@ class ParticleFilter(Node):
             self.get_logger().info("sensor running")
             # downsample lidar to correct number of beams, evenly spaced 
             observation = np.array(scan.ranges)
-            mask = (np.linspace(0, len(observation)-1, self.num_beams_per_particle)).astype(int)
+            mask = (np.linspace(0, len(observation)-1, self.sensor_model.num_beams_per_particle)).astype(int)
             observation_downsampled = observation[mask]
             
             # recalculate probabilities using sensor model
@@ -250,8 +251,6 @@ class ParticleFilter(Node):
         msg.orientation.w = quaternion[3]
         return msg
 
-
-        
     def normalize(self, arr):
         return arr / np.sum(arr)
         
