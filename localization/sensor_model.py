@@ -38,7 +38,6 @@ class SensorModel:
         self.sigma_hit = 8.0
 
         self.z_max = 200.0
-        self.eta = 1.0
 
         # Your sensor table will be a `table_width` x `table_width` np array:
         self.table_width = 201
@@ -94,7 +93,7 @@ class SensorModel:
         self.sensor_model_table = np.zeros((self.table_width, self.table_width))
         for z in range(self.table_width):
             for d in range(self.table_width):
-                self.sensor_model_table[z][d] = self.probability_without_hit(z, d, self.eta, self.z_max)
+                self.sensor_model_table[z][d] = self.probability_without_hit(z, d, self.z_max)
                 p_hit_table[z][d] = self.p_hit(z, d, self.z_max)
 
         # normalize columns
@@ -167,7 +166,7 @@ class SensorModel:
 
         # print("Map initialized")
 
-    def probability_without_hit(self, z, d, eta, z_max):
+    def probability_without_hit(self, z, d, z_max):
         p_short = (2/d) * (1 - (z/d)) if 0<=z<=d and d!=0 else 0
         p_max = 1 if z==z_max else 0
         p_rand = 1/z_max if 0<=z<=z_max else 0
