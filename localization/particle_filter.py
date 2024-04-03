@@ -7,6 +7,8 @@ from sensor_msgs.msg import LaserScan
 from ackermann_msgs.msg import AckermannDriveStamped
 from std_msgs.msg import Float32
 
+from vs_msgs.msg import ParkingError
+
 from rclpy.node import Node
 import rclpy
 
@@ -101,17 +103,17 @@ class ParticleFilter(Node):
         self.lock = False
 
         # test in sim
-        self.drive_pub = self.create_publisher(AckermannDriveStamped, "/drive", 10)
-        def timer_cb():
-            signal = AckermannDriveStamped()
-            signal.drive.speed = 1.0
-            # signal.drive.steering_angle = 0.1
-            self.drive_pub.publish(signal)
-        self.timer = self.create_timer(1., timer_cb)
+        # self.drive_pub = self.create_publisher(AckermannDriveStamped, "/drive", 10)
+        # def timer_cb():
+        #     signal = AckermannDriveStamped()
+        #     signal.drive.speed = 1.0
+        #     signal.drive.steering_angle = 0.1
+        #     self.drive_pub.publish(signal)
+        # self.timer = self.create_timer(1., timer_cb)
 
         # publish viz/test stuff
-        self.xy_error_pub = self.create_publisher(Float32, "pf/xy_error", 1)
-        self.th_error_pub = self.create_publisher(Float32, "pf/th_error", 1)
+        self.error_pub = self.create_publisher(ParkingError, "/pf/error", 1)
+        # self.th_error_pub = self.create_publisher(Float32, "pf/th_error", 1)
         self.pose_arr_pub = self.create_publisher(PoseArray, "pf/particles", 1)
         self.timer = self.create_timer(0.05, self.timer_cb)
         self.best_guess = [0,0,0]
@@ -192,14 +194,18 @@ class ParticleFilter(Node):
             odom.pose.pose.position.y,
             euler_from_quaternion([odom.pose.pose.orientation.x, odom.pose.pose.orientation.y, odom.pose.pose.orientation.z, odom.pose.pose.orientation.w])[2],
         ])
-        xy_msg = Float32()
-        xy_msg.data = np.linalg.norm(gt[:2] - self.best_guess[:2])
-        self.xy_error_pub.publish(xy_msg)
-        th_msg = Float32()
-        th_msg.data = np.sqrt((gt[2]%(2*np.pi) + self.best_guess[2]%(2*np.pi))**2)
-        self.th_error_pub.publish(th_msg)
+        # xy_msg = Float32()
+        # xy_msg.data = np.linalg.norm(gt[:2] - self.best_guess[:2])
+        # self.xy_error_pub.publish(xy_msg)
+        # th_msg = Float32()
+        # th_msg.data = np.sqrt((gt[2]%(2*np.pi) - self.best_guess[2]%(2*np.pi))**2)
+        # self.th_error_pub.publish(th_msg)
         
+        error_msg = ParkingError()
 
+        error_msg.x_error = np.linalg.norm(gt[:2] - self.best_guess[:2])
+        error_msg.y_error = np.sqrt((gt[2]%(2*np.pi) - self.best_guess[2]%(2*np.pi))**2)
+        self.error_pub.publish(error_msg)
 
         
     def pose_callback(self, init_pose):
