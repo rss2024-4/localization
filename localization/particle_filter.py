@@ -5,6 +5,7 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose
 from sensor_msgs.msg import LaserScan
 from ackermann_msgs.msg import AckermannDriveStamped
+from std_msgs.msg import Float32
 
 from rclpy.node import Node
 import rclpy
@@ -108,9 +109,12 @@ class ParticleFilter(Node):
             self.drive_pub.publish(signal)
         self.timer = self.create_timer(1., timer_cb)
 
-        # publish particle poses
+        # publish viz/test stuff
+        self.xy_error_pub = self.create_publisher(Float32, "pf/xy_error", 1)
+        self.th_error_pub = self.create_publisher(Float32, "pf/th_error", 1)
         self.pose_arr_pub = self.create_publisher(PoseArray, "pf/particles", 1)
         self.timer = self.create_timer(0.05, self.timer_cb)
+        self.best_guess = [0,0,0]
 
         
     
@@ -182,6 +186,21 @@ class ParticleFilter(Node):
 
             self.lock = False
 
+        # publish errors
+        gt = np.array([
+            odom.pose.pose.position.x,
+            odom.pose.pose.position.y,
+            euler_from_quaternion([odom.pose.pose.orientation.x, odom.pose.pose.orientation.y, odom.pose.pose.orientation.z, odom.pose.pose.orientation.w])[2],
+        ])
+        xy_msg = Float32()
+        xy_msg.data = np.linalg.norm(gt[:2] - self.best_guess[:2])
+        self.xy_error_pub.publish(xy_msg)
+        th_msg = Float32()
+        th_msg.data = np.sqrt((gt[2]%(2*np.pi) + self.best_guess[2]%(2*np.pi))**2)
+        self.th_error_pub.publish(th_msg)
+        
+
+
         
     def pose_callback(self, init_pose):
         """
@@ -210,6 +229,7 @@ class ParticleFilter(Node):
         """
         avg_pose = self.particles[np.argmax(self.particle_probabilities)]
         #TODO: do weighted average with outlier detection
+        self.best_guess = avg_pose
         
         msg = Odometry()
         msg.header.frame_id = "map"
@@ -228,6 +248,7 @@ class ParticleFilter(Node):
 
 
     def timer_cb(self):
+        # particle poses
         msg = PoseArray()
         msg.header.frame_id = "map"
         msg.header.stamp = self.get_clock().now().to_msg()
