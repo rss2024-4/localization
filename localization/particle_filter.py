@@ -2,7 +2,7 @@ from localization.sensor_model import SensorModel
 from localization.motion_model import MotionModel
 
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose
 from sensor_msgs.msg import LaserScan
 from ackermann_msgs.msg import AckermannDriveStamped
 
@@ -27,7 +27,7 @@ class ParticleFilter(Node):
         # self.declare_parameter('num_beams_per_particle', "default")
         
         self.particle_filter_frame = self.get_parameter('particle_filter_frame').get_parameter_value().string_value
-        self.num_beams_per_particle = self.get_parameter('num_beams_per_particle').get_parameter_value().integer_value
+        # self.num_beams_per_particle = self.get_parameter('num_beams_per_particle').get_parameter_value().integer_value
 
         #  *Important Note #1:* It is critical for your particle
         #     filter to obtain the following topic names from the
@@ -73,6 +73,7 @@ class ParticleFilter(Node):
         # Initialize the models
         self.motion_model = MotionModel(self)
         self.sensor_model = SensorModel(self)
+        self.num_beams_per_particle = self.sensor_model.num_beams_per_particle
 
         self.get_logger().info("=============+READY+=============")
 
@@ -93,6 +94,10 @@ class ParticleFilter(Node):
         
         self.last_time = None
 
+
+        # lock
+        self.lock = False
+
         # test in sim
         self.drive_pub = self.create_publisher(AckermannDriveStamped, "/drive", 10)
         def timer_cb():
@@ -102,7 +107,10 @@ class ParticleFilter(Node):
             self.drive_pub.publish(signal)
         self.timer = self.create_timer(1., timer_cb)
 
-        self.lock = False
+        # publish particle poses
+        self.pose_arr_pub = self.create_publisher(PoseArray, "pf/particles", 1)
+        self.timer = self.create_timer(0.05, self.timer_cb)
+
         
     
     def laser_callback(self, scan):
@@ -216,12 +224,37 @@ class ParticleFilter(Node):
         msg.pose.pose.orientation.w = quaternion[3]
         
         self.odom_pub.publish(msg)
+
+
+    def timer_cb(self):
+        msg = PoseArray()
+        msg.header.frame_id = "map"
+        msg.header.stamp = self.get_clock().now().to_msg()
+        arr = []
+        if self.particles is not None:
+            for i in self.particles:
+                arr.append(self.to_pose_msg(i))
+            msg.poses = arr
+            self.pose_arr_pub.publish(msg)
+
+
+    def to_pose_msg(self, pose_vec):
+        # pose_vec is [x,y,th]
+        msg = Pose()
+        msg.position.x = pose_vec[0]
+        msg.position.y = pose_vec[1]
+        quaternion = quaternion_from_euler(0, 0, pose_vec[2])
+        msg.orientation.x = quaternion[0]
+        msg.orientation.y = quaternion[1]
+        msg.orientation.z = quaternion[2]
+        msg.orientation.w = quaternion[3]
+        return msg
+
+
         
     def normalize(self, arr):
         return arr / np.sum(arr)
         
-    # def drive(self):
-
 
 def main(args=None):
     rclpy.init(args=args)
