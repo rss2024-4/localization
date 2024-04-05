@@ -223,8 +223,6 @@ class ParticleFilter(Node):
         
         pose_guess = np.array([[x, y, theta]])
         self.particles = np.repeat(pose_guess, self.N_PARTICLES, axis=0)
-        # self.particles += self.motion_model.gen_noise(self.N_PARTICLES) we already add noise in the motion model
-        #TODO: change noise model to use covariances from pose message?
         
         self.particle_probabilities = np.ones(self.N_PARTICLES) / self.N_PARTICLES
         
@@ -233,8 +231,8 @@ class ParticleFilter(Node):
         """
         Publish particle filter 'average' guess as nav_msgs/Odometry message
         """
-        avg_pose = self.particles[np.argmax(self.particle_probabilities)]
-        #TODO: do weighted average with outlier detection
+        # avg_pose = self.particles[np.argmax(self.particle_probabilities)]
+        avg_pose = np.average(self.particles, weights=self.particle_probabilities, axis=0)
         self.best_guess = avg_pose
         
         msg = Odometry()
