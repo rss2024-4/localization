@@ -128,8 +128,6 @@ class ParticleFilter(Node):
             odom: sensor_msgs/LaserScan message
         """
         if self.lock == False:
-
-
             if self.particles is None:
                 self.get_logger().info("no particles from sensor")
                 return
@@ -162,6 +160,7 @@ class ParticleFilter(Node):
         args
             odom: nav_msgs/Odometry message
         """
+        self.get_logger().info("outside lock: motion running")
         if self.lock == True:
             if self.particles is None:
                 self.get_logger().info("no particles from odom")
