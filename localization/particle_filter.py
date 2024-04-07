@@ -2,7 +2,7 @@ from localization.sensor_model import SensorModel
 from localization.motion_model import MotionModel
 
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose
+from geometry_msgs.msg import PoseWithCovarianceStamped, PoseArray, Pose, TransformStamped
 from sensor_msgs.msg import LaserScan
 from ackermann_msgs.msg import AckermannDriveStamped
 from std_msgs.msg import Float32
@@ -13,7 +13,9 @@ from rclpy.node import Node
 import rclpy
 
 
-from tf_transformations import euler_from_quaternion, quaternion_from_euler
+from tf_transformations import euler_from_quaternion, quaternion_from_euler, quaternion_from_matrix
+from tf2_ros import TransformBroadcaster
+from tf2_ros.buffer import Buffer
 
 assert rclpy
 
@@ -26,6 +28,9 @@ class ParticleFilter(Node):
 
     def __init__(self):
         super().__init__("particle_filter")
+
+        self.tf_broadcaster = TransformBroadcaster(self)
+        self.tf_buffer = Buffer()
 
         self.declare_parameter('particle_filter_frame', "default")
         # self.declare_parameter('num_beams_per_particle', "default")
@@ -253,6 +258,23 @@ class ParticleFilter(Node):
         msg.pose.pose.orientation.w = quaternion[3]
         
         self.odom_pub.publish(msg)
+
+        base_link_T = self.sensor_model.to_T(self.best_guess)
+
+        obj = TransformStamped()
+        obj.header.stamp = self.get_clock().now().to_msg()
+        obj.header.frame_id = "map"
+        obj.child_frame_id = "base_link"
+        obj.transform.translation.x = base_link_T[0, 3]
+        obj.transform.translation.y = base_link_T[1, 3]
+        obj.transform.translation.z = base_link_T[2, 3]
+        q = quaternion_from_matrix(base_link_T)
+        obj.transform.rotation.x = q[0]
+        obj.transform.rotation.y = q[1]
+        obj.transform.rotation.z = q[2]
+        obj.transform.rotation.w = q[3]
+        self.tf_broadcaster.sendTransform(obj)
+
 
 
     def timer_cb(self):
