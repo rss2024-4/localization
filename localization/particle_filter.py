@@ -273,20 +273,20 @@ class ParticleFilter(Node):
         obj.transform.rotation.w = q[3]
         self.tf_broadcaster.sendTransform(obj)
 
-        obj = TransformStamped()
-        obj.header.stamp = self.get_clock().now().to_msg()
-        obj.header.frame_id = "map"
-        obj.child_frame_id = "laser"
-        obj.transform.translation.x = self.best_guess[0]
-        obj.transform.translation.y = self.best_guess[1]
-        obj.transform.translation.z = 0.
-        q = quaternion_from_euler(0, 0, self.best_guess[2])
-        obj.transform.rotation.x = q[0]
-        obj.transform.rotation.y = q[1]
-        obj.transform.rotation.z = q[2]
-        obj.transform.rotation.w = q[3]
+        # obj = TransformStamped()
+        # obj.header.stamp = self.get_clock().now().to_msg()
+        # obj.header.frame_id = "map"
+        # obj.child_frame_id = "laser"
+        # obj.transform.translation.x = self.best_guess[0]
+        # obj.transform.translation.y = self.best_guess[1]
+        # obj.transform.translation.z = 0.
+        # q = quaternion_from_euler(0, 0, self.best_guess[2])
+        # obj.transform.rotation.x = q[0]
+        # obj.transform.rotation.y = q[1]
+        # obj.transform.rotation.z = q[2]
+        # obj.transform.rotation.w = q[3]
 
-        self.tf_broadcaster.sendTransform(obj)
+        # self.tf_broadcaster.sendTransform(obj)
 
 
 
