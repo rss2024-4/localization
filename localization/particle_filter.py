@@ -180,9 +180,9 @@ class ParticleFilter(Node):
                 return
                 
             dt = time - self.last_time
-            dx = odom.twist.twist.linear.x * dt
-            dy = odom.twist.twist.linear.y * dt
-            dtheta = odom.twist.twist.angular.z * dt # theta is rotation around z
+            dx = odom.twist.twist.linear.x * dt * -1 # reversed axes
+            dy = odom.twist.twist.linear.y * dt * -1 # reversed axes
+            dtheta = odom.twist.twist.angular.z * dt * -1# theta is rotation around z
             self.particles = self.motion_model.evaluate(self.particles, [dx, dy, dtheta])
             
             self.publish_average_pose()
@@ -245,7 +245,7 @@ class ParticleFilter(Node):
         msg.pose.pose.position.x = avg_pose[0]
         msg.pose.pose.position.y = avg_pose[1]
         
-        quaternion = quaternion_from_euler(0, 0, avg_pose[2])
+        quaternion = quaternion_from_euler(0, 0, -1*avg_pose[2])
         
         msg.pose.pose.orientation.x = quaternion[0]
         msg.pose.pose.orientation.y = quaternion[1]
