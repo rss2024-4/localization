@@ -134,12 +134,17 @@ class ParticleFilter(Node):
             self.get_logger().info("sensor running")
             # downsample lidar to correct number of beams, evenly spaced 
             observation = np.array(scan.ranges)
+            self.get_logger().info("sensor running1")
             mask = (np.linspace(0, len(observation)-1, self.sensor_model.num_beams_per_particle)).astype(int)
             observation_downsampled = observation[mask]
+
+            self.get_logger().info("sensor running2")
             
             # recalculate probabilities using sensor model
             self.particle_probabilities = self.sensor_model.evaluate(self.particles, observation_downsampled)
-            
+
+
+            self.get_logger().info("sensor running3")
             # resample particles based on new probabilities
             res = np.random.choice(self.N_PARTICLES, self.N_PARTICLES, True, self.normalize(self.particle_probabilities))
             self.particles = self.particles[res]
