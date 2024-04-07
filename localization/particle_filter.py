@@ -267,7 +267,7 @@ class ParticleFilter(Node):
         obj.child_frame_id = "base_link"
         obj.transform.translation.x = self.best_guess[0]
         obj.transform.translation.y = self.best_guess[1]
-        obj.transform.translation.z = 0
+        obj.transform.translation.z = 0.
         q = quaternion_from_euler(0, 0, self.best_guess[2])
         obj.transform.rotation.x = q[0]
         obj.transform.rotation.y = q[1]
