@@ -127,7 +127,7 @@ class ParticleFilter(Node):
         args
             odom: sensor_msgs/LaserScan message
         """
-        if self.lock == False:
+        if True:
             if self.particles is None:
                 self.get_logger().info("no particles from sensor")
                 return
