@@ -134,7 +134,7 @@ class ParticleFilter(Node):
         """
         if True:
             if self.particles is None:
-                self.get_logger().info("no particles from sensor")
+                # self.get_logger().info("no particles from sensor")
                 return
             # self.get_logger().info("sensor running")
             # downsample lidar to correct number of beams, evenly spaced 
@@ -171,7 +171,7 @@ class ParticleFilter(Node):
         args
             odom: nav_msgs/Odometry message
         """
-        self.get_logger().info("outside lock: motion running")
+        # self.get_logger().info("outside lock: motion running")
         if self.lock == True:
             if self.particles is None:
                 self.get_logger().info("no particles from odom")
