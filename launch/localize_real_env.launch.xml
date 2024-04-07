@@ -29,7 +29,7 @@
   <!-- Launches map from map folder and map server-->
   <!-- <arg name="map" default="$(find-pkg-share racecar_simulator)/maps/stata_basement.yaml"/>
   <node name="map_server" pkg="nav2_map_server" exec="map_server" output="screen">
-    <param name="yaml_filename" value="$(var map)"/> -->
-  </node>
+    <param name="yaml_filename" value="$(var map)"/>
+  </node> -->
 </launch>
 
