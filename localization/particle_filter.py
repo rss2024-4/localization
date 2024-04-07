@@ -259,16 +259,16 @@ class ParticleFilter(Node):
         
         self.odom_pub.publish(msg)
 
-        base_link_T = self.motion_model.to_T(self.best_guess)
+        # base_link_T = self.motion_model.to_T(self.best_guess)
 
         obj = TransformStamped()
         obj.header.stamp = self.get_clock().now().to_msg()
         obj.header.frame_id = "map"
         obj.child_frame_id = "base_link"
-        obj.transform.translation.x = base_link_T[0, 3]
-        obj.transform.translation.y = base_link_T[1, 3]
-        obj.transform.translation.z = base_link_T[2, 3]
-        q = quaternion_from_matrix(base_link_T)
+        obj.transform.translation.x = self.best_guess[0]
+        obj.transform.translation.y = self.best_guess[1]
+        obj.transform.translation.z = 0
+        q = quaternion_from_euler(0, 0, self.best_guess[2])
         obj.transform.rotation.x = q[0]
         obj.transform.rotation.y = q[1]
         obj.transform.rotation.z = q[2]
