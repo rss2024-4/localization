@@ -245,7 +245,7 @@ class ParticleFilter(Node):
         msg.pose.pose.position.x = avg_pose[0]
         msg.pose.pose.position.y = avg_pose[1]
         
-        quaternion = quaternion_from_euler(0, 0, -1*avg_pose[2])
+        quaternion = quaternion_from_euler(0, 0, avg_pose[2])
         
         msg.pose.pose.orientation.x = quaternion[0]
         msg.pose.pose.orientation.y = quaternion[1]
