@@ -259,12 +259,10 @@ class ParticleFilter(Node):
         
         self.odom_pub.publish(msg)
 
-        # base_link_T = self.motion_model.to_T(self.best_guess)
-
         obj = TransformStamped()
         obj.header.stamp = self.get_clock().now().to_msg()
         obj.header.frame_id = "map"
-        obj.child_frame_id = "base_link"
+        obj.child_frame_id = "base_link_pf"
         obj.transform.translation.x = self.best_guess[0]
         obj.transform.translation.y = self.best_guess[1]
         obj.transform.translation.z = 0.
