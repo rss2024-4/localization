@@ -217,7 +217,7 @@ class ParticleFilter(Node):
         args
             init_pose: geometry_msgs/PoseWithCovarianceStamped message
         """
-        self.get_logger().info("Initialized")
+        self.get_logger().info(f'Initialized, {self.sensor_model.map_set}')
         x = init_pose.pose.pose.position.x
         y = init_pose.pose.pose.position.y
         o = init_pose.pose.pose.orientation
