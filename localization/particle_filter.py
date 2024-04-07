@@ -146,6 +146,7 @@ class ParticleFilter(Node):
             self.particle_probabilities = self.particle_probabilities[res]
             self.particle_probabilities /= np.sum(self.particle_probabilities) # Is normalization needed? No individual particles have individual probabilities of existing
             
+            self.get_logger().info("sensor done")
             self.publish_average_pose()
 
             
@@ -228,6 +229,8 @@ class ParticleFilter(Node):
         Publish particle filter 'average' guess as nav_msgs/Odometry message
         """
         # avg_pose = self.particles[np.argmax(self.particle_probabilities)]
+
+        self.get_logger().info("publishing pose")
         avg_pose = np.average(self.particles, weights=self.particle_probabilities, axis=0)
         self.best_guess = avg_pose
         
