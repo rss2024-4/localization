@@ -48,6 +48,8 @@ class SensorModel:
         node.get_logger().info("th discretization: %s" % self.scan_theta_discretization)
         node.get_logger().info("fov: %s" % self.scan_field_of_view)
 
+        self.node = node
+
         # Precompute the sensor model table
         self.sensor_model_table = np.empty((self.table_width, self.table_width))
         self.precompute_sensor_model()
@@ -164,7 +166,7 @@ class SensorModel:
         # Make the map set
         self.map_set = True
 
-        # print("Map initialized")
+        self.node.get_logger().info("Map initialized")
 
     def probability_without_hit(self, z, d, z_max):
         p_short = (2/d) * (1 - (z/d)) if 0<=z<=d and d!=0 else 0
