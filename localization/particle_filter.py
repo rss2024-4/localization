@@ -163,8 +163,6 @@ class ParticleFilter(Node):
             odom: nav_msgs/Odometry message
         """
         if self.lock == True:
-
-
             if self.particles is None:
                 self.get_logger().info("no particles from odom")
                 return
@@ -184,7 +182,6 @@ class ParticleFilter(Node):
             
             self.publish_average_pose()
             self.last_time = time
-
 
             self.lock = False
 
