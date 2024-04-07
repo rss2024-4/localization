@@ -125,11 +125,11 @@ class SensorModel:
                the probability of each particle existing
                given the observation and the map.
         """
-        self.get_logger().info("sensor evaluate")
+        self.node.get_logger().info("sensor evaluate")
         if not self.map_set:
             return
         
-        self.get_logger().info("sensor evaluate2")
+        self.node.get_logger().info("sensor evaluate2")
         positions = self.scan_sim.scan(particles)
         observation = np.clip(observation / (self.resolution*self.lidar_scale_to_map_scale), 0, self.z_max)
         observation = np.round(observation).astype(int)
