@@ -262,7 +262,7 @@ class ParticleFilter(Node):
         obj = TransformStamped()
         obj.header.stamp = self.get_clock().now().to_msg()
         obj.header.frame_id = "map"
-        obj.child_frame_id = "base_link"
+        obj.child_frame_id = self.particle_filter_frame
         obj.transform.translation.x = self.best_guess[0]
         obj.transform.translation.y = self.best_guess[1]
         obj.transform.translation.z = 0.
