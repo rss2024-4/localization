@@ -259,7 +259,7 @@ class ParticleFilter(Node):
         
         self.odom_pub.publish(msg)
 
-        base_link_T = self.sensor_model.to_T(self.best_guess)
+        base_link_T = self.motion_model.to_T(self.best_guess)
 
         obj = TransformStamped()
         obj.header.stamp = self.get_clock().now().to_msg()
