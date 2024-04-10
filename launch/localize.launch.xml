@@ -2,5 +2,4 @@
     <node pkg="localization" exec="particle_filter" name="particle_filter" output="screen">
         <param from="$(find-pkg-share localization)/params.yaml"/>
     </node>
-    <node pkg="localization" exec="laser_transform" name="laser_transform" output="screen"></node>
 </launch>

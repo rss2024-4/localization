@@ -29,8 +29,8 @@ class ParticleFilter(Node):
     def __init__(self):
         super().__init__("particle_filter")
 
-        self.tf_broadcaster = TransformBroadcaster(self)
-        self.tf_buffer = Buffer()
+        # self.tf_broadcaster = TransformBroadcaster(self)
+        # self.tf_buffer = Buffer()
 
         self.declare_parameter('particle_filter_frame', "default")
         # self.declare_parameter('num_beams_per_particle', "default")
@@ -123,6 +123,8 @@ class ParticleFilter(Node):
         self.timer = self.create_timer(0.05, self.timer_cb)
         self.best_guess = [0,0,0]
 
+        self.laser_repub = self.create_publisher(LaserScan, "/laser2", 1)
+
         
     
     def laser_callback(self, scan):
@@ -132,6 +134,21 @@ class ParticleFilter(Node):
         args
             odom: sensor_msgs/LaserScan message
         """
+        new = LaserScan()
+        new.angle_min = scan.angle_min
+        new.angle_max = scan.angle_max
+        new.angle_increment = scan.angle_increment
+        new.time_increment = scan.time_increment
+        new.scan_time = scan.scan_time
+        new.range_min = scan.range_min
+        new.range_max = scan.range_max
+        new.ranges = scan.ranges
+        new.intensities = scan.intensities
+        new.header.seq = scan.header.sec
+        new.header.frame_id = "base_link"
+        new.header.stamp = scan.header.stamp
+        self.laser_repub.publish(new)
+
         if True:
             if self.particles is None:
                 # self.get_logger().info("no particles from sensor")
@@ -259,19 +276,19 @@ class ParticleFilter(Node):
         
         self.odom_pub.publish(msg)
 
-        obj = TransformStamped()
-        obj.header.stamp = self.get_clock().now().to_msg()
-        obj.header.frame_id = "map"
-        obj.child_frame_id = self.particle_filter_frame
-        obj.transform.translation.x = self.best_guess[0]
-        obj.transform.translation.y = self.best_guess[1]
-        obj.transform.translation.z = 0.
-        q = quaternion_from_euler(0, 0, self.best_guess[2])
-        obj.transform.rotation.x = q[0]
-        obj.transform.rotation.y = q[1]
-        obj.transform.rotation.z = q[2]
-        obj.transform.rotation.w = q[3]
-        self.tf_broadcaster.sendTransform(obj)
+        # obj = TransformStamped()
+        # obj.header.stamp = self.get_clock().now().to_msg()
+        # obj.header.frame_id = "map"
+        # obj.child_frame_id = self.particle_filter_frame
+        # obj.transform.translation.x = self.best_guess[0]
+        # obj.transform.translation.y = self.best_guess[1]
+        # obj.transform.translation.z = 0.
+        # q = quaternion_from_euler(0, 0, self.best_guess[2])
+        # obj.transform.rotation.x = q[0]
+        # obj.transform.rotation.y = q[1]
+        # obj.transform.rotation.z = q[2]
+        # obj.transform.rotation.w = q[3]
+        # self.tf_broadcaster.sendTransform(obj)
 
         # obj = TransformStamped()
         # obj.header.stamp = self.get_clock().now().to_msg()
