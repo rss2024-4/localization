@@ -171,9 +171,9 @@ class ParticleFilter(Node):
                 return
                 
             dt = time - self.last_time
-            dx = odom.twist.twist.linear.x * dt
-            dy = odom.twist.twist.linear.y * dt
-            dtheta = odom.twist.twist.angular.z * dt # theta is rotation around z
+            dx = odom.twist.twist.linear.x * dt * -1
+            dy = odom.twist.twist.linear.y * dt * -1
+            dtheta = odom.twist.twist.angular.z * dt * -1 # theta is rotation around z
             self.particles = self.motion_model.evaluate(self.particles, [dx, dy, dtheta])
             
             self.publish_average_pose()
