@@ -151,7 +151,7 @@ class ParticleFilter(Node):
 
         if True:
             if self.particles is None:
-                self.get_logger().info("no particles from sensor")
+                # self.get_logger().info("no particles from sensor")
                 return
             # self.get_logger().info("sensor running")
             # downsample lidar to correct number of beams, evenly spaced 
@@ -191,10 +191,10 @@ class ParticleFilter(Node):
         # self.get_logger().info("outside lock: motion running")
         if True:
             if self.particles is None:
-                self.get_logger().info("no particles from odom")
+                # self.get_logger().info("no particles from odom")
                 return
             
-            self.get_logger().info("motion running")
+            # self.get_logger().info("motion running")
             time = odom.header.stamp.sec + odom.header.stamp.nanosec * 1e-9
             
             if self.last_time is None:
@@ -257,7 +257,7 @@ class ParticleFilter(Node):
         """
         # avg_pose = self.particles[np.argmax(self.particle_probabilities)]
 
-        self.get_logger().info("publishing pose")
+        # self.get_logger().info("publishing pose")
         avg_pose = np.average(self.particles, weights=self.particle_probabilities, axis=0)
         self.best_guess = avg_pose
         
