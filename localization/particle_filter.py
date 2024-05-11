@@ -51,7 +51,8 @@ class ParticleFilter(Node):
 
         scan_topic = self.get_parameter("scan_topic").get_parameter_value().string_value
         odom_topic = self.get_parameter("odom_topic").get_parameter_value().string_value
-
+        odom_topic = "/vesc/odom"
+        self.get_logger().info(f'odom topic is  {odom_topic}, scan {scan_topic}')
         self.laser_sub = self.create_subscription(LaserScan, scan_topic,
                                                   self.laser_callback,
                                                   1)
@@ -144,14 +145,13 @@ class ParticleFilter(Node):
         new.range_max = scan.range_max
         new.ranges = scan.ranges
         new.intensities = scan.intensities
-        new.header.seq = scan.header.sec
         new.header.frame_id = "base_link"
         new.header.stamp = scan.header.stamp
         self.laser_repub.publish(new)
 
         if True:
             if self.particles is None:
-                # self.get_logger().info("no particles from sensor")
+                self.get_logger().info("no particles from sensor")
                 return
             # self.get_logger().info("sensor running")
             # downsample lidar to correct number of beams, evenly spaced 
@@ -189,7 +189,7 @@ class ParticleFilter(Node):
             odom: nav_msgs/Odometry message
         """
         # self.get_logger().info("outside lock: motion running")
-        if self.lock == True:
+        if True:
             if self.particles is None:
                 self.get_logger().info("no particles from odom")
                 return
@@ -206,7 +206,7 @@ class ParticleFilter(Node):
             dy = odom.twist.twist.linear.y * dt * -1 # reversed axes
             dtheta = odom.twist.twist.angular.z * dt * -1# theta is rotation around z
             self.particles = self.motion_model.evaluate(self.particles, [dx, dy, dtheta])
-            
+            self.get_logger().info(f'dx is {dx}, raw {odom.twist.twist.linear.x}, dt is {dt}, dy is {dy}')
             self.publish_average_pose()
             self.last_time = time
 
